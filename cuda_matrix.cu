@@ -89,7 +89,7 @@ int main()
     cudaMemcpy(dA, A, bytes, cudaMemcpyHostToDevice);
     cudaMemcpy(dB, B, bytes, cudaMemcpyHostToDevice);
 
-    dim3 block(16, 16);
+    dim3 block(32, 32);
     dim3 grid((N + block.x - 1) / block.x,
               (N + block.y - 1) / block.y);
 
