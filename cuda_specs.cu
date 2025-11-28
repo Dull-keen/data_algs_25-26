@@ -22,7 +22,10 @@ int main()
         printf("\nDevice %d:\n", i);
         printf("  Name: %s\n", prop.name);
         printf("  Compute capability: %d.%d\n", prop.major, prop.minor);
-        printf("  Total global memory: %zu bytes\n", prop.totalGlobalMem);
+        double total_mem_gib = (double)prop.totalGlobalMem / (1024.0 * 1024.0 * 1024.0);
+        printf("  Total global memory: %.2f GB (or %zu bytes)\n", total_mem_gib, prop.totalGlobalMem); 
+        printf("  Multiprocessor count: %d\n", prop.multiProcessorCount);
+        printf("  Max threads per block: %d\n", prop.maxThreadsPerBlock);
     }
 
     return 0;
