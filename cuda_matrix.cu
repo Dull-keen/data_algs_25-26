@@ -3,10 +3,11 @@
 #include <cuda_runtime.h>
 #include <chrono>
 
-#define N 2
-#define PRINT_PART_SIZE 2 
+#define N 2000 // Размер матрицы N x N
+#define PRINT_PART_SIZE 5 // Размер части матрицы для вывода 
 
-void print_matrix_part(const char* name, float* M) 
+// Функция для вывода части матрицы
+void print_matrix_part(const char* name, float* M)
 {
     printf("%s:\n", name);
     for (int i = 0; i < PRINT_PART_SIZE; i++) 
@@ -20,7 +21,7 @@ void print_matrix_part(const char* name, float* M)
     printf("\n");
 }
 
-
+// Функция умножения матриц на CPU
 void matmul_cpu(float* A, float* B, float* C) 
 {
     for (int i = 0; i < N; i++) 
@@ -37,7 +38,7 @@ void matmul_cpu(float* A, float* B, float* C)
     }
 }
 
-
+// CUDA kernel для умножения матриц на GPU
 __global__ void matmul_gpu(float* A, float* B, float* C) 
 {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -54,11 +55,12 @@ __global__ void matmul_gpu(float* A, float* B, float* C)
     }
 }
 
+
 int main() 
 {
     size_t bytes = N * N * sizeof(float);
 
-    // Выделение и инициализация матриц на CPU
+    // Выделение памяти и инициализация матриц
     float *A, *B, *C_cpu, *C_gpu;
     A = (float*)malloc(bytes);
     B = (float*)malloc(bytes);
@@ -71,19 +73,10 @@ int main()
         B[i] = (float)(rand() % 10);
     }
 
+    // Вывод части матриц A и B
     print_matrix_part("A (part)", A);
     print_matrix_part("B (part)", B);
 
-
-auto start = std::chrono::high_resolution_clock::now();
-matmul_cpu(A, B, C_cpu);
-auto end = std::chrono::high_resolution_clock::now();
-double cpu_time = std::chrono::duration<double>(end - start).count();
-
-printf("CPU time: %.3f seconds\n", cpu_time);
-
-
-    
     // Выделение памяти на GPU
     float *dA, *dB, *dC;
     cudaMalloc(&dA, bytes);
@@ -98,6 +91,8 @@ printf("CPU time: %.3f seconds\n", cpu_time);
               (N + block.y - 1) / block.y);
 
               
+    printf("Launching GPU kernel...\n");
+
     auto gstart = std::chrono::high_resolution_clock::now();
     matmul_gpu<<<grid, block>>>(dA, dB, dC);
     cudaDeviceSynchronize();
@@ -106,12 +101,24 @@ printf("CPU time: %.3f seconds\n", cpu_time);
     double gpu_time = std::chrono::duration<double>(gend - gstart).count();
 
     printf("GPU time: %.3f seconds\n", gpu_time);
-    printf("Speedup: %.2fx\n", cpu_time / gpu_time);
 
+    // Копирование результата обратно на CPU и вывод части результата
     cudaMemcpy(C_gpu, dC, bytes, cudaMemcpyDeviceToHost);
+    print_matrix_part("C_gpu (part)", C_gpu);
+
+
+    printf("Computing on CPU...\n");
+
+    auto start = std::chrono::high_resolution_clock::now();
+    matmul_cpu(A, B, C_cpu);
+    auto end = std::chrono::high_resolution_clock::now();
+    double cpu_time = std::chrono::duration<double>(end - start).count();
+
+    printf("CPU time: %.3f seconds\n", cpu_time);
 
     print_matrix_part("C_cpu (part)", C_cpu);
-    print_matrix_part("C_gpu (part)", C_gpu);
+    
+    printf("GPU speedup: %.2fx\n", cpu_time / gpu_time);
 
     cudaFree(dA);
     cudaFree(dB);
