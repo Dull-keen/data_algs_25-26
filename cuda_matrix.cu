@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <cuda_runtime.h>
 #include <chrono>
+#include <time.h>
+#include <string.h>
 
-#define N 2000 // Размер матрицы N x N
+#define N 1000 // Размер матрицы N x N
 #define PRINT_PART_SIZE 5 // Размер части матрицы для вывода 
 
 // Функция для вывода части матрицы
@@ -58,6 +60,7 @@ __global__ void matmul_gpu(float* A, float* B, float* C)
 
 int main() 
 {
+    srand((unsigned int)time(NULL));
     size_t bytes = N * N * sizeof(float);
 
     // Выделение памяти и инициализация матриц
@@ -120,6 +123,7 @@ int main()
     
     printf("GPU speedup: %.2fx\n", cpu_time / gpu_time);
 
+    printf("Verification: %s\n", (memcmp(C_cpu, C_gpu, bytes) == 0) ? "SUCCESS" : "FAILURE");
     cudaFree(dA);
     cudaFree(dB);
     cudaFree(dC);
