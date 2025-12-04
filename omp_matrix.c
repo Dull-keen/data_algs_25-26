@@ -4,10 +4,9 @@
 #include <omp.h>
 #include <string.h>
 
-#define N 1000 // Размер матрицы N x N
-#define PRINT_PART_SIZE 5 // Размер части матрицы для вывода 
+#define N 1000 // Matrix size N x N
+#define PRINT_PART_SIZE 5 // Size of the matrix part to print 
 
-// Функция для вывода части матрицы
 void print_matrix_part(const char* name, float* M)
 {
     printf("%s:\n", name);
@@ -22,7 +21,6 @@ void print_matrix_part(const char* name, float* M)
     printf("\n");
 }
 
-// Функция умножения матриц без параллелизации
 void matmul(float* A, float* B, float* C) 
 {
     for (int i = 0; i < N; i++) 
@@ -39,7 +37,6 @@ void matmul(float* A, float* B, float* C)
     }
 }
 
-// Функция умножения матриц с использованием OpenMP
 void matmul_omp(float* A, float* B, float* C) 
 {
     #pragma omp parallel for num_threads(8)
@@ -62,7 +59,7 @@ int main()
     srand((unsigned int)time(NULL));
     size_t bytes = N * N * sizeof(float);
 
-    // Выделение памяти и инициализация матриц
+    // Memory allocation and initialization
     float *A, *B, *C, *C_omp;
     A = (float*)malloc(bytes);
     B = (float*)malloc(bytes);

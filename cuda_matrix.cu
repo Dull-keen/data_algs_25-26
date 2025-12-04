@@ -5,10 +5,9 @@
 #include <time.h>
 #include <string.h>
 
-#define N 1000 // Размер матрицы N x N
-#define PRINT_PART_SIZE 5 // Размер части матрицы для вывода 
+#define N 1000 // Matrix size N x N
+#define PRINT_PART_SIZE 5 // Size of the matrix part to print 
 
-// Функция для вывода части матрицы
 void print_matrix_part(const char* name, float* M)
 {
     printf("%s:\n", name);
@@ -23,7 +22,6 @@ void print_matrix_part(const char* name, float* M)
     printf("\n");
 }
 
-// Функция умножения матриц на CPU
 void matmul_cpu(float* A, float* B, float* C) 
 {
     for (int i = 0; i < N; i++) 
@@ -40,7 +38,6 @@ void matmul_cpu(float* A, float* B, float* C)
     }
 }
 
-// CUDA kernel для умножения матриц на GPU
 __global__ void matmul_gpu(float* A, float* B, float* C) 
 {
     int row = blockIdx.y * blockDim.y + threadIdx.y;
@@ -63,7 +60,7 @@ int main()
     srand((unsigned int)time(NULL));
     size_t bytes = N * N * sizeof(float);
 
-    // Выделение памяти и инициализация матриц
+    // Memory allocation and initialization on CPU
     float *A, *B, *C_cpu, *C_gpu;
     A = (float*)malloc(bytes);
     B = (float*)malloc(bytes);
@@ -76,11 +73,11 @@ int main()
         B[i] = (float)(rand() % 10);
     }
 
-    // Вывод части матриц A и B
+    // Printing parts of matrices A and B
     print_matrix_part("A (part)", A);
     print_matrix_part("B (part)", B);
 
-    // Выделение памяти на GPU
+    // Memory allocation on GPU
     float *dA, *dB, *dC;
     cudaMalloc(&dA, bytes);
     cudaMalloc(&dB, bytes);
@@ -105,7 +102,7 @@ int main()
 
     printf("GPU time: %.3f seconds\n", gpu_time);
 
-    // Копирование результата обратно на CPU и вывод части результата
+    // Copy back to CPU
     cudaMemcpy(C_gpu, dC, bytes, cudaMemcpyDeviceToHost);
     print_matrix_part("C_gpu (part)", C_gpu);
 
